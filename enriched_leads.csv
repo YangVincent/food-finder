@@ -1,0 +1,13 @@
+name,email,phone,website,linkedin_url,address,city,state,zip_code,employee_count,score,source,has_crm,is_qualified
+ANHEUSER BUSCH CALIFORNIA-MONTCLAIR DISTRIBUTION CENTER,info@biagibros.com,(707) 251-9990,https://www.biagibros.com/locations/Southern_California_Warehouses.html,,,Montclair,CA,,,45.0,cdph_organic,False,True
+SWEET HEART GROUP LTD.,hello@cheriesh.com,(694) 624-5249,https://www.cheriesh.com/,,,City Of Industry,CA,,,45.0,cdph_organic,False,True
+ANDERSON ADVANCED INGREDIENTS,info@advancedingredients.com,(801) 930-9561,https://www.advancedingredients.com/about,,,Irvine,CA,,,45.0,cdph_organic,False,True
+ANCIENT ORGANICS,email@example.com,(252) 028-0753,https://www.ancientorganics.com/,,,Newman,CA,,,45.0,cdph_organic,False,True
+ANCIENT ARGO,karun@ancientagro.com,(661) 042-6842,https://www.goldenstategrains.com/farmers/ancient-agro,,,Cupertino,CA,,,45.0,cdph_organic,False,True
+CARTOGRAPH COFFEE,wlochran@cartographcoffee.com,(751) 343-3596,https://cartographcoffee.com/pages/contact,,,Santa Monica,CA,,,45.0,cdph_organic,False,True
+ANHEUSER-BUSCH SALES OF SAN DIEGO,,(295) 418-0236,https://www.abwholesaler.com/a-b-sales-of-san-diego/contact-us/,,,San Diego,CA,,,30.0,cdph_organic,False,True
+"ANHEUSER-BUSCH, LLC",,(163) 166-5225,https://www.abwholesaler.com/anheuser-busch-sales-of-la-south-bay/contact-us/,,,Carson,CA,,,30.0,cdph_organic,False,True
+ANHEUSER-BUSCH SALES OF SYLMAR,,(800) 600-8022,https://www.abwholesaler.com/anheuser-busch-sales-of-la-sylmar/contact-us/,,,Sylmar,CA,,,30.0,cdph_organic,False,True
+ANHEUSER-BUSCH SALES AND DISTRIBUTION ON INLAND EMPIRE,,(333) 850-3466,https://www.loc8nearme.com/california/pomona/anheuser-busch-sales/8341878/,,,Pomona,CA,,,30.0,cdph_organic,False,True
+ANHEUSER-BUSCH SALES OF CENTRAL-L.A.,,(333) 850-3466,https://www.loc8nearme.com/california/santa-fe-springs/anheuser-busch-sales-of-central-la/7836257/,,,Santa Fe Springs,CA,,,30.0,cdph_organic,False,True
+MAREBLU NATURALS,,(091) 614-8965,https://www.chamberofcommerce.com/united-states/california/anaheim/grocery-store/2003982188-mareblu-naturals,,,Anaheim,CA,,,30.0,cdph_organic,False,True
