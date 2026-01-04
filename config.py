@@ -50,6 +50,11 @@ SCORING = {
     "has_job_postings": 10,
     "has_website": 5,
     "basic_website": 5,
+    # Company type scoring
+    "has_linkedin": 15,  # LinkedIn presence indicates established business
+    "type_established_business": 10,
+    "type_farm": 0,  # Farms are neutral - could be good targets
+    "type_artisan_shop": -10,  # Deprioritize small artisan shops
 }
 
 # Disqualification thresholds

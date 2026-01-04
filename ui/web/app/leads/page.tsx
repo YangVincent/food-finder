@@ -38,6 +38,7 @@ function LeadsContent() {
            searchParams.get('is_us') === 'all' ? undefined : true,  // Default to US only
     is_enriched: searchParams.get('is_enriched') === 'true' ? true :
                  searchParams.get('is_enriched') === 'false' ? false : undefined,
+    company_type: searchParams.get('company_type') || undefined,
     search: searchParams.get('search') || undefined,
   }), [searchParams]);
 
@@ -96,7 +97,7 @@ function LeadsContent() {
   };
 
   // is_us=true is the default, so count as "active filter" if set to false or all (undefined)
-  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.is_us !== true || params.is_enriched !== undefined || params.search;
+  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.is_us !== true || params.is_enriched !== undefined || params.company_type || params.search;
 
   const SortIndicator = ({ column }: { column: string }) => {
     if (params.sort_by !== column) return null;
@@ -204,6 +205,20 @@ function LeadsContent() {
             <option value="">All Enrichment</option>
             <option value="true">Enriched</option>
             <option value="false">Not Enriched</option>
+          </select>
+
+          {/* Company Type Filter */}
+          <select
+            value={params.company_type || ''}
+            onChange={(e) => updateParams({ company_type: e.target.value || undefined })}
+            className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-2 font-mono text-sm text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
+          >
+            <option value="">All Types</option>
+            {filterOptions?.company_types?.map((type) => (
+              <option key={type} value={type}>
+                {type.replace(/_/g, ' ')}
+              </option>
+            ))}
           </select>
 
           {/* Clear Filters */}

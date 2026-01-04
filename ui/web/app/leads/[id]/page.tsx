@@ -300,6 +300,31 @@ export default function LeadDetailPage() {
                   </p>
                 </div>
               </div>
+              {lead.company_type && (
+                <div className="flex items-center gap-3">
+                  <Building2 className="h-4 w-4 text-[var(--text-muted)]" />
+                  <div>
+                    <p className="font-mono text-xs text-[var(--text-muted)]">Company Type</p>
+                    <p className="font-mono text-sm text-[var(--text-primary)]">
+                      {lead.company_type.replace(/_/g, ' ')}
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-3">
+                <Linkedin className="h-4 w-4 text-[var(--text-muted)]" />
+                <div>
+                  <p className="font-mono text-xs text-[var(--text-muted)]">Has LinkedIn</p>
+                  <p className={cn(
+                    "font-mono text-sm",
+                    lead.has_linkedin === true ? "text-[var(--success)]" :
+                    lead.has_linkedin === false ? "text-[var(--text-tertiary)]" :
+                    "text-[var(--text-muted)]"
+                  )}>
+                    {lead.has_linkedin === true ? 'Yes' : lead.has_linkedin === false ? 'No' : 'Not checked'}
+                  </p>
+                </div>
+              </div>
               {lead.employee_count && (
                 <div className="flex items-center gap-3">
                   <Users className="h-4 w-4 text-[var(--text-muted)]" />

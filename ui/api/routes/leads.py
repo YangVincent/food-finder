@@ -40,6 +40,8 @@ def get_leads(
     has_email: Optional[bool] = None,
     is_us: Optional[bool] = None,
     is_enriched: Optional[bool] = None,
+    company_type: Optional[str] = None,
+    has_linkedin: Optional[bool] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
@@ -72,6 +74,13 @@ def get_leads(
             query = query.filter(Company.last_enriched_at.isnot(None))
         else:
             query = query.filter(Company.last_enriched_at.is_(None))
+    if company_type:
+        query = query.filter(Company.company_type == company_type)
+    if has_linkedin is not None:
+        if has_linkedin:
+            query = query.filter(Company.has_linkedin == True)
+        else:
+            query = query.filter((Company.has_linkedin == False) | Company.has_linkedin.is_(None))
     if search:
         search_term = f"%{search}%"
         query = query.filter(
@@ -112,6 +121,7 @@ def get_filter_options(db: Session = Depends(get_db)):
     """Get available filter options."""
     states = db.query(Company.state).distinct().filter(Company.state.isnot(None)).all()
     sources = db.query(Company.source).distinct().filter(Company.source.isnot(None)).all()
+    company_types = db.query(Company.company_type).distinct().filter(Company.company_type.isnot(None)).all()
 
     score_stats = db.query(
         func.min(Company.score),
@@ -121,6 +131,7 @@ def get_filter_options(db: Session = Depends(get_db)):
     return FilterOptions(
         states=sorted([s[0] for s in states]),
         sources=sorted([s[0] for s in sources]),
+        company_types=sorted([t[0] for t in company_types]),
         score_min=score_stats[0] or 0,
         score_max=score_stats[1] or 100
     )

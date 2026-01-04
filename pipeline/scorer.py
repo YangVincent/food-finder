@@ -103,6 +103,25 @@ def score_company_dict(company: dict) -> dict:
     if not company.get("is_spa", False):
         score += SCORING["basic_website"]
 
+    # LinkedIn presence indicates established business
+    if company.get("has_linkedin"):
+        score += SCORING["has_linkedin"]
+
+    # Company type scoring
+    company_type = company.get("company_type")
+    if company_type == "research_institution":
+        is_qualified = False
+        disqualification_reason = "Research institution (not a business)"
+    elif company_type == "government":
+        is_qualified = False
+        disqualification_reason = "Government agency"
+    elif company_type == "established_business":
+        score += SCORING["type_established_business"]
+    elif company_type == "farm":
+        score += SCORING["type_farm"]  # Neutral
+    elif company_type == "artisan_shop":
+        score += SCORING["type_artisan_shop"]  # Negative score
+
     company["score"] = score
     company["is_qualified"] = is_qualified
     company["disqualification_reason"] = disqualification_reason
@@ -144,6 +163,21 @@ def get_score_breakdown(company: dict) -> list[str]:
 
     if not company.get("is_spa", False):
         breakdown.append(f"+{SCORING['basic_website']}: Basic website (no SPA)")
+
+    if company.get("has_linkedin"):
+        breakdown.append(f"+{SCORING['has_linkedin']}: Has LinkedIn page")
+
+    company_type = company.get("company_type")
+    if company_type == "research_institution":
+        breakdown.append("DISQUALIFIED: Research institution")
+    elif company_type == "government":
+        breakdown.append("DISQUALIFIED: Government agency")
+    elif company_type == "established_business":
+        breakdown.append(f"+{SCORING['type_established_business']}: Established business")
+    elif company_type == "farm":
+        breakdown.append(f"+{SCORING['type_farm']}: Farm")
+    elif company_type == "artisan_shop":
+        breakdown.append(f"{SCORING['type_artisan_shop']}: Artisan shop (deprioritized)")
 
     total = company.get("score", 0)
     breakdown.append(f"TOTAL: {total}")

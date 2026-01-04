@@ -19,6 +19,7 @@ from scrapers.usda_api import scrape_all_states as scrape_usda_api, USDAOperatio
 from scrapers.google_search import WebsiteFinder
 from enrichers.contact_extractor import ContactExtractor
 from enrichers.tech_detector import TechDetector
+from enrichers.company_classifier import CompanyClassifier
 from pipeline.scorer import score_company_dict
 from config import is_source_enabled, get_enabled_sources
 
@@ -265,6 +266,29 @@ async def run_enrichment_pipeline(
                         if tech.has_crm:
                             print(f"    CRM detected: {tech.crm_detected}")
 
+                    # Find LinkedIn if not already found
+                    if not company.get("linkedin_url"):
+                        linkedin = await website_finder.find_linkedin(
+                            company["name"], company["city"], company["state"]
+                        )
+                        if linkedin:
+                            company["linkedin_url"] = linkedin
+                            print(f"    Found LinkedIn: {linkedin[:50]}")
+
+                    # Classify company type
+                    classifier = CompanyClassifier()
+                    classification = classifier.classify(
+                        name=company["name"],
+                        website=company.get("website"),
+                        linkedin_url=company.get("linkedin_url"),
+                        has_crm=company.get("has_crm"),
+                        tech_stack=company.get("tech_stack"),
+                        employee_count=company.get("employee_count"),
+                    )
+                    company["company_type"] = classification.company_type.value
+                    company["has_linkedin"] = classification.has_linkedin
+                    print(f"    Type: {classification.company_type.value} ({classification.confidence})")
+
                     # Score the lead
                     score_company_dict(company)
                     print(f"    Score: {company['score']}")
@@ -293,6 +317,8 @@ async def run_enrichment_pipeline(
                     db_company.phone = company.get("phone")
                     db_company.has_crm = company.get("has_crm")
                     db_company.tech_stack = company.get("tech_stack")
+                    db_company.has_linkedin = company.get("has_linkedin")
+                    db_company.company_type = company.get("company_type")
                     db_company.score = company.get("score", 0)
                     db_company.is_qualified = company.get("is_qualified", True)
                     db_company.disqualification_reason = company.get("disqualification_reason")

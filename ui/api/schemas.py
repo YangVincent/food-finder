@@ -18,6 +18,8 @@ class LeadListItem(BaseModel):
     score: Optional[float] = None
     is_qualified: Optional[bool] = None
     has_crm: Optional[bool] = None
+    has_linkedin: Optional[bool] = None
+    company_type: Optional[str] = None
     last_enriched_at: Optional[datetime] = None
 
     class Config:
@@ -44,6 +46,8 @@ class LeadDetail(BaseModel):
     has_crm: Optional[bool] = None
     tech_stack: Optional[str] = None
     has_job_postings: Optional[bool] = None
+    has_linkedin: Optional[bool] = None
+    company_type: Optional[str] = None
     score: Optional[float] = None
     is_qualified: Optional[bool] = None
     disqualification_reason: Optional[str] = None
@@ -89,5 +93,6 @@ class FilterOptions(BaseModel):
     """Available filter options."""
     states: List[str]
     sources: List[str]
+    company_types: List[str] = []
     score_min: float
     score_max: float

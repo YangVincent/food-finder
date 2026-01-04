@@ -17,6 +17,8 @@ export interface Lead {
   has_crm: boolean | null;
   tech_stack: string | null;
   has_job_postings: boolean | null;
+  has_linkedin: boolean | null;
+  company_type: string | null;
   score: number | null;
   is_qualified: boolean | null;
   disqualification_reason: string | null;
@@ -37,6 +39,8 @@ export interface LeadListItem {
   score: number | null;
   is_qualified: boolean | null;
   has_crm: boolean | null;
+  has_linkedin: boolean | null;
+  company_type: string | null;
   last_enriched_at: string | null;
 }
 
@@ -70,6 +74,7 @@ export interface ScoreDistribution {
 export interface FilterOptions {
   states: string[];
   sources: string[];
+  company_types: string[];
   score_min: number;
   score_max: number;
 }
@@ -87,5 +92,7 @@ export interface LeadsQueryParams {
   has_email?: boolean;
   is_us?: boolean;
   is_enriched?: boolean;
+  company_type?: string;
+  has_linkedin?: boolean;
   search?: string;
 }

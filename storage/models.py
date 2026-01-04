@@ -44,6 +44,8 @@ class Company(Base):
     has_crm = Column(Boolean)
     tech_stack = Column(Text)  # JSON string of detected technologies
     has_job_postings = Column(Boolean)
+    has_linkedin = Column(Boolean)
+    company_type = Column(String(50), index=True)  # research_institution, government, large_company, established_business, artisan_shop, unknown
 
     # Scoring
     score = Column(Float, default=0.0, index=True)
@@ -75,5 +77,7 @@ class Company(Base):
             "source": self.source,
             "score": self.score,
             "is_qualified": self.is_qualified,
+            "has_linkedin": self.has_linkedin,
+            "company_type": self.company_type,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
