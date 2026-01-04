@@ -1,5 +1,6 @@
 # Database
 leads.db
+*.db-journal
 
 # USDA data cache
 /tmp/usda_data/
@@ -8,11 +9,21 @@ leads.db
 __pycache__/
 *.py[cod]
 *$py.class
-.venv/
+*.so
+.Python
 venv/
+ENV/
+.venv/
 *.egg-info/
 dist/
 build/
+*.egg
+*.whl
+
+# Node
+node_modules/
+.next/
+out/
 
 # IDE
 .idea/
@@ -31,3 +42,8 @@ Thumbs.db
 # Environment
 .env
 .env.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
