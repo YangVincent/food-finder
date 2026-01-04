@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -19,14 +20,17 @@ import {
   XCircle,
   ExternalLink,
   Copy,
+  Sparkles,
 } from 'lucide-react';
 import { getLead } from '@/lib/api';
 import { cn, formatDateTime, getScoreClass, getScoreLabel, parseJsonSafe } from '@/lib/utils';
+import { DraftEmailModal } from '@/components/draft-email-modal';
 
 export default function LeadDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = Number(params.id);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   const { data: lead, isLoading, error } = useQuery({
     queryKey: ['lead', id],
@@ -107,6 +111,21 @@ export default function LeadDetailPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Draft Email Button */}
+            <button
+              onClick={() => setIsEmailModalOpen(true)}
+              disabled={!lead.website}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 font-mono text-sm transition-colors',
+                lead.website
+                  ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90'
+                  : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] cursor-not-allowed'
+              )}
+              title={!lead.website ? 'Website required to generate email' : 'Generate draft email'}
+            >
+              <Sparkles className="h-4 w-4" />
+              Draft Email
+            </button>
             {/* Score Badge */}
             <div className="text-right">
               <span
@@ -416,6 +435,14 @@ export default function LeadDetailPage() {
           )}
         </div>
       </div>
+
+      {/* Draft Email Modal */}
+      <DraftEmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        leadId={lead.id}
+        leadName={lead.name}
+      />
     </div>
   );
 }

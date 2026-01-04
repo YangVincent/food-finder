@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from ui.api.routes import leads, stats
+from ui.api.routes import leads, stats, email
 
 app = FastAPI(
     title="Leads Monitoring API",
@@ -34,6 +34,7 @@ app.add_middleware(
 # Include routers
 app.include_router(stats.router, prefix="/api/stats", tags=["stats"])
 app.include_router(leads.router, prefix="/api/leads", tags=["leads"])
+app.include_router(email.router, prefix="/api/email", tags=["email"])
 
 
 @app.get("/")
