@@ -39,6 +39,7 @@ export async function getLeads(params: LeadsQueryParams = {}): Promise<LeadsResp
   if (params.is_qualified !== undefined) searchParams.set('is_qualified', params.is_qualified.toString());
   if (params.has_email !== undefined) searchParams.set('has_email', params.has_email.toString());
   if (params.is_us !== undefined) searchParams.set('is_us', params.is_us.toString());
+  if (params.is_enriched !== undefined) searchParams.set('is_enriched', params.is_enriched.toString());
   if (params.search) searchParams.set('search', params.search);
 
   const query = searchParams.toString();

@@ -441,29 +441,33 @@ class USDABulkDownloader:
             last = self._get_text(elem, "op_contLastName")
             contact_name = " ".join(filter(None, [first, last])) or None
 
-            # Build address
-            line1 = self._get_text(elem, "opPA_line1")
-            line2 = self._get_text(elem, "opPA_line2")
+            # Build address - try physical address first, fall back to mailing address
+            line1 = self._get_text(elem, "opPA_line1") or self._get_text(elem, "opMA_line1")
+            line2 = self._get_text(elem, "opPA_line2") or self._get_text(elem, "opMA_line2")
             address = ", ".join(filter(None, [line1, line2])) or None
 
-            # Get country and normalize it
-            country_raw = self._get_text(elem, "opPA_country")
+            # Get country - try physical address first, fall back to mailing address
+            country_raw = self._get_text(elem, "opPA_country") or self._get_text(elem, "opMA_country")
             country = self._normalize_country(country_raw)
             is_us = country == "USA"
 
-            # Get state - only normalize to 2-letter code for US addresses
-            state = self._get_text(elem, "opPA_state")
+            # Get state - try physical address first, fall back to mailing address
+            state = self._get_text(elem, "opPA_state") or self._get_text(elem, "opMA_state")
             if state and is_us:
                 state = self._normalize_state(state)
             # For non-US, keep the full state/province name
+
+            # Get city and zip - try physical address first, fall back to mailing address
+            city = self._get_text(elem, "opPA_city") or self._get_text(elem, "opMA_city")
+            zip_code = self._get_text(elem, "opPA_zip") or self._get_text(elem, "opMA_zip")
 
             return USDAOperation(
                 name=name,
                 operation_id=self._get_text(elem, "op_nopOpID") or "",
                 address=address,
-                city=self._get_text(elem, "opPA_city"),
+                city=city,
                 state=state,
-                zip_code=self._get_text(elem, "opPA_zip"),
+                zip_code=zip_code,
                 country=country,
                 phone=self._get_text(elem, "op_phone"),
                 email=self._get_text(elem, "op_email"),

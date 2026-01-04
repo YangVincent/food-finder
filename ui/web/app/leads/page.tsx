@@ -34,8 +34,10 @@ function LeadsContent() {
     source: searchParams.get('source') || undefined,
     is_qualified: searchParams.get('is_qualified') === 'true' ? true :
                   searchParams.get('is_qualified') === 'false' ? false : undefined,
-    is_us: searchParams.get('is_us') === 'true' ? true :
-           searchParams.get('is_us') === 'false' ? false : undefined,
+    is_us: searchParams.get('is_us') === 'false' ? false :
+           searchParams.get('is_us') === 'all' ? undefined : true,  // Default to US only
+    is_enriched: searchParams.get('is_enriched') === 'true' ? true :
+                 searchParams.get('is_enriched') === 'false' ? false : undefined,
     search: searchParams.get('search') || undefined,
   }), [searchParams]);
 
@@ -93,7 +95,8 @@ function LeadsContent() {
     router.push('/leads');
   };
 
-  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.is_us !== undefined || params.search;
+  // is_us=true is the default, so count as "active filter" if set to false or all (undefined)
+  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.is_us !== true || params.is_enriched !== undefined || params.search;
 
   const SortIndicator = ({ column }: { column: string }) => {
     if (params.sort_by !== column) return null;
@@ -177,17 +180,30 @@ function LeadsContent() {
             <option value="false">Disqualified</option>
           </select>
 
-          {/* US Filter */}
+          {/* US Filter - defaults to US Only */}
           <select
-            value={params.is_us === undefined ? '' : String(params.is_us)}
+            value={params.is_us === undefined ? 'all' : String(params.is_us)}
             onChange={(e) => updateParams({
-              is_us: e.target.value === '' ? undefined : e.target.value === 'true'
+              is_us: e.target.value as any  // Pass 'all', 'true', or 'false' as string
             })}
             className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-2 font-mono text-sm text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
           >
-            <option value="">All Countries</option>
             <option value="true">US Only</option>
             <option value="false">International</option>
+            <option value="all">All Countries</option>
+          </select>
+
+          {/* Enriched Filter */}
+          <select
+            value={params.is_enriched === undefined ? '' : String(params.is_enriched)}
+            onChange={(e) => updateParams({
+              is_enriched: e.target.value === '' ? undefined : e.target.value === 'true'
+            })}
+            className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-2 font-mono text-sm text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
+          >
+            <option value="">All Enrichment</option>
+            <option value="true">Enriched</option>
+            <option value="false">Not Enriched</option>
           </select>
 
           {/* Clear Filters */}

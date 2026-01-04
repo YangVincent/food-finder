@@ -39,6 +39,7 @@ def get_leads(
     is_qualified: Optional[bool] = None,
     has_email: Optional[bool] = None,
     is_us: Optional[bool] = None,
+    is_enriched: Optional[bool] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
@@ -66,6 +67,11 @@ def get_leads(
             query = query.filter(Company.country == "USA")
         else:
             query = query.filter((Company.country != "USA") | Company.country.is_(None))
+    if is_enriched is not None:
+        if is_enriched:
+            query = query.filter(Company.last_enriched_at.isnot(None))
+        else:
+            query = query.filter(Company.last_enriched_at.is_(None))
     if search:
         search_term = f"%{search}%"
         query = query.filter(

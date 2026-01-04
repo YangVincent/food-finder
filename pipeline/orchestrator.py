@@ -196,12 +196,14 @@ async def run_enrichment_pipeline(
 
     while True:
         # Get companies needing enrichment and convert to dicts
+        # Only enrich US leads (international leads less likely to convert)
         company_dicts = []
         with get_session() as session:
             companies = (
                 session.query(Company)
                 .filter(Company.last_enriched_at.is_(None))
                 .filter(Company.is_qualified == True)
+                .filter(Company.country == "USA")
                 .limit(batch_size)
                 .all()
             )
@@ -215,6 +217,9 @@ async def run_enrichment_pipeline(
             print(f"Enriching batch of {len(company_dicts)} companies...")
 
         # Enrich outside the session
+        # Track which companies were actually enriched
+        enriched_ids = set()
+
         async with WebsiteFinder() as website_finder, \
                    ContactExtractor() as contact_extractor, \
                    TechDetector() as tech_detector:
@@ -255,6 +260,7 @@ async def run_enrichment_pipeline(
                         # Detect tech stack
                         tech = await tech_detector.analyze_website(company["website"])
                         company["has_crm"] = tech.has_crm
+                        company["crm_detected"] = tech.crm_detected  # Save CRM name for disqualification reason
                         company["tech_stack"] = str(tech.detected_tech) if tech.detected_tech else None
                         if tech.has_crm:
                             print(f"    CRM detected: {tech.crm_detected}")
@@ -263,6 +269,8 @@ async def run_enrichment_pipeline(
                     score_company_dict(company)
                     print(f"    Score: {company['score']}")
 
+                    # Mark this company as actually enriched
+                    enriched_ids.add(company["id"])
                     enriched_count += 1
 
                 except Exception as e:
@@ -271,9 +279,12 @@ async def run_enrichment_pipeline(
                 if max_leads and enriched_count >= max_leads:
                     break
 
-        # Save updates back to database
+        # Save updates back to database - only for actually enriched leads
         with get_session() as session:
             for company in company_dicts:
+                if company["id"] not in enriched_ids:
+                    continue  # Skip leads that weren't actually enriched
+
                 db_company = session.query(Company).filter(Company.id == company["id"]).first()
                 if db_company:
                     db_company.website = company.get("website")

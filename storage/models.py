@@ -30,7 +30,7 @@ class Company(Base):
     city = Column(String(255))
     state = Column(String(50), index=True)
     zip_code = Column(String(20))
-    country = Column(String(100), default="USA")
+    country = Column(String(100))
 
     # Company details
     employee_count = Column(Integer)

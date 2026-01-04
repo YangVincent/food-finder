@@ -86,5 +86,6 @@ export interface LeadsQueryParams {
   is_qualified?: boolean;
   has_email?: boolean;
   is_us?: boolean;
+  is_enriched?: boolean;
   search?: string;
 }
