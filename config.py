@@ -1,6 +1,16 @@
 """Configuration for the food-finder lead generation tool."""
 
+import os
 import random
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load .env file from project root
+load_dotenv(Path(__file__).parent / ".env")
+
+# AI API Configuration
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 # Database
 DATABASE_URL = "sqlite:///leads.db"

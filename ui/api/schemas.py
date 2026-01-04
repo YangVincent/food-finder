@@ -91,3 +91,20 @@ class FilterOptions(BaseModel):
     sources: List[str]
     score_min: float
     score_max: float
+
+
+class EnrichedCompanyInfo(BaseModel):
+    """Enriched company information from website scraping."""
+    about_text: Optional[str] = None
+    products: List[str] = []
+    services: List[str] = []
+    key_phrases: List[str] = []
+
+
+class DraftEmailResponse(BaseModel):
+    """Response containing draft email and enriched info."""
+    lead_id: int
+    lead_name: str
+    enriched_info: EnrichedCompanyInfo
+    subject: str
+    body: str

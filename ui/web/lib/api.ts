@@ -5,6 +5,7 @@ import type {
   ScoreDistribution,
   FilterOptions,
   LeadsQueryParams,
+  DraftEmailResponse,
 } from './types';
 
 const API_BASE = 'http://localhost:8000/api';
@@ -51,4 +52,22 @@ export async function getLead(id: number): Promise<Lead> {
 
 export async function getFilterOptions(): Promise<FilterOptions> {
   return fetchAPI<FilterOptions>('/leads/filters/');
+}
+
+async function postAPI<T>(endpoint: string): Promise<T> {
+  const res = await fetch(`${API_BASE}${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`API error: ${res.status} ${errorText}`);
+  }
+  return res.json();
+}
+
+export async function generateDraftEmail(leadId: number): Promise<DraftEmailResponse> {
+  return postAPI<DraftEmailResponse>(`/email/${leadId}/draft`);
 }

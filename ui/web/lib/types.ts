@@ -88,3 +88,18 @@ export interface LeadsQueryParams {
   is_us?: boolean;
   search?: string;
 }
+
+export interface EnrichedCompanyInfo {
+  about_text: string | null;
+  products: string[];
+  services: string[];
+  key_phrases: string[];
+}
+
+export interface DraftEmailResponse {
+  lead_id: number;
+  lead_name: string;
+  enriched_info: EnrichedCompanyInfo;
+  subject: string;
+  body: string;
+}
