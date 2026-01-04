@@ -1,3 +1,10 @@
+# Database
+leads.db
+*.db-journal
+
+# USDA data cache
+/tmp/usda_data/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -10,6 +17,8 @@ ENV/
 *.egg-info/
 dist/
 build/
+*.egg
+*.whl
 
 # Node
 node_modules/
@@ -26,6 +35,10 @@ out/
 .DS_Store
 Thumbs.db
 
+# Exports (contain PII)
+*.csv
+!data/*.csv
+
 # Environment
 .env
 .env.local
@@ -34,10 +47,3 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-
-# Database (keep leads.db but ignore test databases)
-*.db-journal
-
-# Build artifacts
-*.egg
-*.whl

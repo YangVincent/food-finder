@@ -17,8 +17,29 @@ USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
 ]
 
-# USDA Organic Integrity Database API
+# USDA Organic Integrity Database API (old web scraper - broken)
 USDA_ORGANIC_API_BASE = "https://organic.ams.usda.gov/integrity/api"
+
+# USDA Official API (new - works!)
+USDA_API_KEY = "1OeTriw6oiJqsbph661A7Ccqp8RSfddDTHXPOb2e"
+USDA_API_BASE_URL = "https://organicapi.ams.usda.gov/IntegrityPubDataServices/OIDPublicAPI"
+
+# Source configuration - control which scrapers are enabled
+ENABLED_SOURCES = {
+    "usda_api": True,       # New API-based scraper (recommended)
+    "usda_organic": False,  # Old web scraper (broken - JS-heavy site)
+    "cdph_organic": False,  # CA CDPH (minimal data - name/city only)
+}
+
+
+def is_source_enabled(source: str) -> bool:
+    """Check if a data source is enabled."""
+    return ENABLED_SOURCES.get(source, False)
+
+
+def get_enabled_sources() -> list[str]:
+    """Return list of enabled source identifiers."""
+    return [src for src, enabled in ENABLED_SOURCES.items() if enabled]
 
 # Lead scoring weights
 SCORING = {
