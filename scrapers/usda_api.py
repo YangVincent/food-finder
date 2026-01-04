@@ -38,6 +38,7 @@ class USDAOperation:
     city: str | None = None
     state: str | None = None
     zip_code: str | None = None
+    country: str | None = None
     phone: str | None = None
     email: str | None = None
     website: str | None = None
@@ -445,10 +446,16 @@ class USDABulkDownloader:
             line2 = self._get_text(elem, "opPA_line2")
             address = ", ".join(filter(None, [line1, line2])) or None
 
-            # Get state - convert full name to abbreviation if needed
+            # Get country and normalize it
+            country_raw = self._get_text(elem, "opPA_country")
+            country = self._normalize_country(country_raw)
+            is_us = country == "USA"
+
+            # Get state - only normalize to 2-letter code for US addresses
             state = self._get_text(elem, "opPA_state")
-            if state:
+            if state and is_us:
                 state = self._normalize_state(state)
+            # For non-US, keep the full state/province name
 
             return USDAOperation(
                 name=name,
@@ -457,6 +464,7 @@ class USDABulkDownloader:
                 city=self._get_text(elem, "opPA_city"),
                 state=state,
                 zip_code=self._get_text(elem, "opPA_zip"),
+                country=country,
                 phone=self._get_text(elem, "op_phone"),
                 email=self._get_text(elem, "op_email"),
                 website=self._get_text(elem, "op_url"),
@@ -475,8 +483,31 @@ class USDABulkDownloader:
             return child.text.strip()
         return None
 
+    def _normalize_country(self, country: str | None) -> str | None:
+        """Normalize country name to standard format."""
+        if not country:
+            return None
+
+        country_lower = country.lower().strip()
+
+        # Map common variations to standard names
+        us_variants = [
+            "united states of america (the)",
+            "united states of america",
+            "united states",
+            "usa",
+            "us",
+            "u.s.a.",
+            "u.s.",
+        ]
+        if country_lower in us_variants:
+            return "USA"
+
+        # Return cleaned country name for non-US
+        return country.strip()
+
     def _normalize_state(self, state: str) -> str:
-        """Convert full state name to abbreviation."""
+        """Convert full US state name to abbreviation. Only call for US addresses."""
         state_map = {
             "alabama": "AL", "alaska": "AK", "arizona": "AZ", "arkansas": "AR",
             "california": "CA", "colorado": "CO", "connecticut": "CT", "delaware": "DE",
@@ -491,9 +522,13 @@ class USDABulkDownloader:
             "south dakota": "SD", "tennessee": "TN", "texas": "TX", "utah": "UT",
             "vermont": "VT", "virginia": "VA", "washington": "WA", "west virginia": "WV",
             "wisconsin": "WI", "wyoming": "WY", "district of columbia": "DC",
+            # US territories
+            "puerto rico": "PR", "guam": "GU", "virgin islands": "VI",
+            "american samoa": "AS", "northern mariana islands": "MP",
         }
-        state_lower = state.lower()
-        return state_map.get(state_lower, state[:2].upper() if len(state) > 2 else state.upper())
+        state_lower = state.lower().strip()
+        # Only return abbreviation if we know it's a US state, otherwise return as-is
+        return state_map.get(state_lower, state)
 
 
 def scrape_bulk(

@@ -125,6 +125,7 @@ async def run_usda_api_pipeline(
                 "city": operation.city,
                 "state": operation.state,
                 "zip_code": operation.zip_code,
+                "country": operation.country,
                 "phone": operation.phone,
                 "email": operation.email,
                 "website": operation.website,

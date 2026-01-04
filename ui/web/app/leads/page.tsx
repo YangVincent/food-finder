@@ -34,6 +34,8 @@ function LeadsContent() {
     source: searchParams.get('source') || undefined,
     is_qualified: searchParams.get('is_qualified') === 'true' ? true :
                   searchParams.get('is_qualified') === 'false' ? false : undefined,
+    is_us: searchParams.get('is_us') === 'true' ? true :
+           searchParams.get('is_us') === 'false' ? false : undefined,
     search: searchParams.get('search') || undefined,
   }), [searchParams]);
 
@@ -91,7 +93,7 @@ function LeadsContent() {
     router.push('/leads');
   };
 
-  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.search;
+  const hasActiveFilters = params.state || params.source || params.is_qualified !== undefined || params.is_us !== undefined || params.search;
 
   const SortIndicator = ({ column }: { column: string }) => {
     if (params.sort_by !== column) return null;
@@ -173,6 +175,19 @@ function LeadsContent() {
             <option value="">All Status</option>
             <option value="true">Qualified</option>
             <option value="false">Disqualified</option>
+          </select>
+
+          {/* US Filter */}
+          <select
+            value={params.is_us === undefined ? '' : String(params.is_us)}
+            onChange={(e) => updateParams({
+              is_us: e.target.value === '' ? undefined : e.target.value === 'true'
+            })}
+            className="bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-2 font-mono text-sm text-[var(--text-primary)] focus:border-[var(--accent-primary)] focus:outline-none"
+          >
+            <option value="">All Countries</option>
+            <option value="true">US Only</option>
+            <option value="false">International</option>
           </select>
 
           {/* Clear Filters */}

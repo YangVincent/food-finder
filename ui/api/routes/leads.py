@@ -5,6 +5,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from typing import Optional
 
+# Valid US state codes (including territories)
+US_STATES = {
+    'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+    'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+    'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+    'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+    'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+    'DC', 'PR', 'VI', 'GU', 'AS', 'MP'  # DC + territories
+}
+
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
@@ -28,6 +38,7 @@ def get_leads(
     max_score: Optional[float] = None,
     is_qualified: Optional[bool] = None,
     has_email: Optional[bool] = None,
+    is_us: Optional[bool] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
@@ -50,6 +61,11 @@ def get_leads(
             query = query.filter(Company.email.isnot(None))
         else:
             query = query.filter(Company.email.is_(None))
+    if is_us is not None:
+        if is_us:
+            query = query.filter(Company.country == "USA")
+        else:
+            query = query.filter((Company.country != "USA") | Company.country.is_(None))
     if search:
         search_term = f"%{search}%"
         query = query.filter(

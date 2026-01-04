@@ -85,5 +85,6 @@ export interface LeadsQueryParams {
   max_score?: number;
   is_qualified?: boolean;
   has_email?: boolean;
+  is_us?: boolean;
   search?: string;
 }

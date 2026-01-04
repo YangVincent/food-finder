@@ -168,11 +168,9 @@ export default function DashboardPage() {
               </div>
               <div className="h-4 w-px bg-[var(--border-subtle)]" />
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs text-[var(--text-muted)]">Conversion Rate:</span>
+                <span className="font-mono text-xs text-[var(--text-muted)]">Emailable Leads:</span>
                 <span className="font-mono text-sm font-medium text-[var(--success)]">
-                  {stats.total > 0
-                    ? `${((stats.with_email / stats.total) * 100).toFixed(1)}%`
-                    : '0%'}
+                  {formatNumber(stats.with_email)}
                 </span>
               </div>
             </div>

@@ -322,10 +322,12 @@ export default function LeadDetailPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-xs text-[var(--text-muted)]">Has CRM:</span>
-                {lead.has_crm ? (
+                {lead.has_crm === true ? (
                   <span className="font-mono text-xs text-[var(--danger)]">Yes</span>
-                ) : (
+                ) : lead.has_crm === false ? (
                   <span className="font-mono text-xs text-[var(--success)]">No</span>
+                ) : (
+                  <span className="font-mono text-xs text-[var(--text-tertiary)]">Not checked</span>
                 )}
               </div>
               {techStack && techStack.length > 0 && (
