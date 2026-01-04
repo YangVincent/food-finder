@@ -14,7 +14,9 @@ from rich.table import Table
 
 from storage.database import init_db, get_session, get_lead_stats
 from storage.models import Company
-from pipeline.orchestrator import run_scrape_pipeline, run_enrichment_pipeline, run_full_pipeline
+from pipeline.orchestrator import run_scrape_pipeline, run_enrichment_pipeline, run_full_pipeline, run_usda_api_pipeline
+from pipeline.scorer import score_lead
+from config import ENABLED_SOURCES, get_enabled_sources, SCORING
 from export.csv_export import (
     export_leads_to_csv,
     export_for_email_outreach,
@@ -44,18 +46,39 @@ def scrape(
     max_leads: Optional[int] = typer.Option(
         None,
         "--max", "-m",
-        help="Maximum number of leads to scrape"
+        help="Maximum number of leads to scrape (default: unlimited for usda_api)"
+    ),
+    source: str = typer.Option(
+        "usda_api",
+        "--source",
+        help="Data source: usda_api (recommended), usda_organic, cdph_organic"
     ),
 ):
-    """Scrape leads from USDA Organic Database."""
+    """Scrape leads from specified source."""
     init_db()
 
     state_list = None
     if states:
         state_list = [s.strip().upper() for s in states.split(",")]
         console.print(f"Scraping states: {', '.join(state_list)}")
+    else:
+        console.print("Scraping all US states")
 
-    asyncio.run(run_scrape_pipeline(state_list, max_leads))
+    if source == "usda_api":
+        console.print("[cyan]Using USDA API bulk download (recommended)[/cyan]")
+        if max_leads:
+            console.print(f"[dim]Limiting to {max_leads} leads[/dim]")
+        asyncio.run(run_usda_api_pipeline(state_list, max_leads))
+    elif source == "usda_organic":
+        console.print("[yellow]Using USDA web scraper (may be slow/broken)[/yellow]")
+        asyncio.run(run_scrape_pipeline(state_list, max_leads))
+    elif source == "cdph_organic":
+        console.print("[yellow]Using CA CDPH (limited data - name/city only)[/yellow]")
+        count = import_ca_processors(limit=max_leads)
+        console.print(f"[green]Imported {count} companies[/green]")
+    else:
+        console.print(f"[red]Unknown source: {source}[/red]")
+        console.print("Available sources: usda_api, usda_organic, cdph_organic")
 
 
 @app.command("import-ca")
@@ -120,10 +143,108 @@ def run(
 
 
 @app.command()
+def sources():
+    """Show available data sources and their status."""
+    table = Table(title="Available Data Sources")
+    table.add_column("Source", style="cyan")
+    table.add_column("Enabled")
+    table.add_column("Description")
+
+    source_info = {
+        "usda_api": ("Yes" if ENABLED_SOURCES.get("usda_api") else "No", "USDA Official API - has phone, email, website"),
+        "usda_organic": ("Yes" if ENABLED_SOURCES.get("usda_organic") else "No", "USDA web scraper - broken (JS-heavy site)"),
+        "cdph_organic": ("Yes" if ENABLED_SOURCES.get("cdph_organic") else "No", "CA CDPH processors - minimal data (name/city only)"),
+    }
+
+    for src, (enabled, desc) in source_info.items():
+        style = "green" if enabled == "Yes" else "dim"
+        table.add_row(src, f"[{style}]{enabled}[/{style}]", desc)
+
+    console.print(table)
+    console.print("\nUse [cyan]--source[/cyan] flag with scrape command to specify source.")
+
+
+@app.command()
 def stats():
     """Show lead database statistics."""
     init_db()
     print_lead_summary()
+
+    # Also show by source
+    with get_session() as session:
+        from sqlalchemy import func
+        source_counts = (
+            session.query(Company.source, func.count(Company.id))
+            .group_by(Company.source)
+            .all()
+        )
+        if source_counts:
+            console.print("\n[bold]Leads by source:[/bold]")
+            for src, count in source_counts:
+                console.print(f"  {src or 'unknown'}: {count}")
+
+
+@app.command()
+def score(
+    force: bool = typer.Option(
+        False,
+        "--force", "-f",
+        help="Re-score all leads, not just unscored ones"
+    ),
+):
+    """Score all leads based on available data (email, phone, website)."""
+    init_db()
+
+    with get_session() as session:
+        # Get leads to score
+        if force:
+            leads = session.query(Company).all()
+            console.print(f"[cyan]Re-scoring all {len(leads)} leads...[/cyan]")
+        else:
+            leads = session.query(Company).filter(Company.score == 0).all()
+            console.print(f"[cyan]Scoring {len(leads)} unscored leads...[/cyan]")
+
+        if not leads:
+            console.print("[yellow]No leads to score.[/yellow]")
+            return
+
+        scored = 0
+        score_distribution = {0: 0, 5: 0, 10: 0, 15: 0, 20: 0, 25: 0, 30: 0}
+
+        for lead in leads:
+            # Calculate score based on available data
+            new_score = 0.0
+
+            if lead.email:
+                new_score += SCORING["email_found"]  # +15
+            if lead.phone:
+                new_score += SCORING["phone_found"]  # +10
+            if lead.website:
+                new_score += SCORING["has_website"]  # +5
+                new_score += SCORING["basic_website"]  # +5 (assume basic until enriched)
+
+            # Update the lead
+            lead.score = new_score
+            scored += 1
+
+            # Track distribution
+            bucket = int(new_score // 5) * 5
+            if bucket > 30:
+                bucket = 30
+            score_distribution[bucket] = score_distribution.get(bucket, 0) + 1
+
+            if scored % 10000 == 0:
+                console.print(f"  Scored {scored} leads...")
+
+        session.commit()
+
+        console.print(f"\n[green]Scored {scored} leads![/green]")
+        console.print("\n[bold]Score distribution:[/bold]")
+        for score_val in sorted(score_distribution.keys()):
+            count = score_distribution[score_val]
+            if count > 0:
+                bar = "█" * min(50, count // 500)
+                console.print(f"  {score_val:2d} pts: {count:,} {bar}")
 
 
 @app.command()

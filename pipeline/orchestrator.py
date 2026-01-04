@@ -15,10 +15,12 @@ from storage.database import (
 )
 from storage.models import Company
 from scrapers.usda_organic import scrape_all_states, OrganicOperation
+from scrapers.usda_api import scrape_all_states as scrape_usda_api, USDAOperation
 from scrapers.google_search import WebsiteFinder
 from enrichers.contact_extractor import ContactExtractor
 from enrichers.tech_detector import TechDetector
 from pipeline.scorer import score_company_dict
+from config import is_source_enabled, get_enabled_sources
 
 
 async def run_scrape_pipeline(
@@ -76,6 +78,76 @@ async def run_scrape_pipeline(
 
     print(f"\nScrape complete!")
     print(f"  New leads: {count}")
+    print(f"  Duplicates skipped: {duplicates}")
+
+    return count
+
+
+async def run_usda_api_pipeline(
+    states: list[str] | None = None,
+    max_leads: int | None = None,
+) -> int:
+    """
+    Run the scraping pipeline using the official USDA API.
+
+    This is the preferred method as it provides direct access to
+    phone, email, and website data without needing enrichment.
+
+    Args:
+        states: List of state codes to scrape (default: all 50)
+        max_leads: Maximum number of leads to scrape (default: unlimited)
+
+    Returns:
+        Number of leads scraped
+    """
+    count = 0
+    duplicates = 0
+    with_contact = 0
+
+    print(f"Starting USDA API scrape pipeline...")
+    if states:
+        print(f"States: {', '.join(states)}")
+
+    async for operation in scrape_usda_api(states, max_leads):
+        with get_session() as session:
+            # Check for duplicates
+            existing = get_company_by_name_and_state(
+                session, operation.name, operation.state or ""
+            )
+            if existing:
+                duplicates += 1
+                continue
+
+            # Add to database with full contact info from API
+            company_data = {
+                "name": operation.name,
+                "address": operation.address,
+                "city": operation.city,
+                "state": operation.state,
+                "zip_code": operation.zip_code,
+                "phone": operation.phone,
+                "email": operation.email,
+                "website": operation.website,
+                "source": "usda_api",
+                "source_id": operation.operation_id,
+                "description": operation.contact_name,  # Store contact name in description
+            }
+            add_company(session, company_data)
+            count += 1
+
+            # Track contact info coverage
+            if operation.phone or operation.email:
+                with_contact += 1
+
+            if count % 100 == 0:
+                print(f"Scraped {count} leads ({with_contact} with contact info)...")
+
+            if max_leads and count >= max_leads:
+                break
+
+    print(f"\nUSDA API scrape complete!")
+    print(f"  New leads: {count}")
+    print(f"  With phone/email: {with_contact} ({100*with_contact//max(count,1)}%)")
     print(f"  Duplicates skipped: {duplicates}")
 
     return count

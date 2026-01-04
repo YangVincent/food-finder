@@ -1,0 +1,33 @@
+# Database
+leads.db
+
+# USDA data cache
+/tmp/usda_data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Exports (contain PII)
+*.csv
+!data/*.csv
+
+# Environment
+.env
+.env.local
