@@ -276,6 +276,10 @@ async def run_enrichment_pipeline(
                         if contacts.phones and not company["phone"]:
                             company["phone"] = contacts.phones[0]
                             print(f"    Found phone: {company['phone']}")
+                        # Use LinkedIn from website's social links (most reliable source)
+                        if contacts.social_links.get("linkedin") and not company.get("linkedin_url"):
+                            company["linkedin_url"] = contacts.social_links["linkedin"]
+                            print(f"    Found LinkedIn (from website): {company['linkedin_url'][:50]}")
 
                         # Detect tech stack
                         tech = await tech_detector.analyze_website(company["website"])

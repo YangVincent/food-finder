@@ -45,7 +45,7 @@ class Company(Base):
     tech_stack = Column(Text)  # JSON string of detected technologies
     has_job_postings = Column(Boolean)
     has_linkedin = Column(Boolean)
-    company_type = Column(String(50), index=True)  # research_institution, government, large_company, established_business, artisan_shop, unknown
+    company_type = Column(String(50), index=True)  # research_institution, government, company, established_business, artisan_shop, farm, unknown
 
     # Scoring
     score = Column(Float, default=0.0, index=True)

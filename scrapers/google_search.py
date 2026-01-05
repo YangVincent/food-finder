@@ -5,13 +5,20 @@ Tries multiple search methods to find company websites.
 """
 
 import asyncio
+import os
 import re
 from urllib.parse import quote_plus, urlparse, unquote
 
 import httpx
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 
 from config import get_random_delay, get_random_user_agent
+
+load_dotenv()
+
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_CSE_ID = os.getenv("GOOGLE_CSE_ID")
 
 
 class WebsiteFinder:
@@ -71,18 +78,40 @@ class WebsiteFinder:
         self, company_name: str, city: str | None = None, state: str | None = None
     ) -> str | None:
         """
-        Find a company's LinkedIn page.
+        Find a company's LinkedIn page using Google Custom Search API.
+
+        Returns the first linkedin.com/company URL found.
         """
         if not self.client:
             raise RuntimeError("Finder not initialized. Use async with.")
 
-        # Build search query targeting LinkedIn
-        query = f'site:linkedin.com/company {company_name}'
-        if state:
-            query += f" {state}"
+        if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:
+            return None
 
-        results = await self._search_bing(company_name, city, state, site="linkedin.com/company")
-        return results
+        query = f"{company_name} site:linkedin.com/company"
+        url = (
+            f"https://www.googleapis.com/customsearch/v1"
+            f"?key={GOOGLE_API_KEY}&cx={GOOGLE_CSE_ID}&q={quote_plus(query)}"
+        )
+
+        try:
+            response = await self.client.get(url)
+
+            if response.status_code != 200:
+                return None
+
+            data = response.json()
+            items = data.get("items", [])
+
+            for item in items:
+                link = item.get("link", "")
+                if "linkedin.com/company" in link:
+                    return link
+
+        except Exception:
+            pass
+
+        return None
 
     async def _search_ddg_lite(
         self, company_name: str, city: str | None, state: str | None

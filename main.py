@@ -379,5 +379,73 @@ def search(
         console.print(table)
 
 
+@app.command("enrich-linkedin")
+def enrich_linkedin(
+    limit: int = typer.Option(
+        100,
+        "--limit", "-l",
+        help="Maximum number of leads to process (default: 100 to stay within API free tier)"
+    ),
+):
+    """
+    Enrich promising companies with LinkedIn URLs.
+
+    Only processes companies that:
+    - Have already been enriched
+    - Are classified as type 'company'
+    - Don't have a LinkedIn URL yet
+    """
+    init_db()
+
+    async def run_linkedin_enrichment():
+        from scrapers.google_search import WebsiteFinder
+        from datetime import datetime
+
+        with get_session() as session:
+            # Find promising companies without LinkedIn
+            companies = (
+                session.query(Company)
+                .filter(Company.last_enriched_at.isnot(None))  # Already enriched
+                .filter(Company.company_type == "company")  # Type is 'company'
+                .filter(
+                    (Company.linkedin_url.is_(None)) | (Company.linkedin_url == "")
+                )  # No LinkedIn yet
+                .order_by(Company.score.desc())  # Prioritize high-score leads
+                .limit(limit)
+                .all()
+            )
+
+            if not companies:
+                console.print("[yellow]No companies to enrich with LinkedIn.[/yellow]")
+                return
+
+            console.print(f"[cyan]Enriching {len(companies)} companies with LinkedIn URLs...[/cyan]")
+
+            found_count = 0
+            async with WebsiteFinder() as finder:
+                for i, company in enumerate(companies, 1):
+                    console.print(f"  [{i}/{len(companies)}] {company.name[:50]}...", end="")
+
+                    linkedin_url = await finder.find_linkedin(
+                        company.name, company.city, company.state
+                    )
+
+                    if linkedin_url:
+                        company.linkedin_url = linkedin_url
+                        company.has_linkedin = True
+                        found_count += 1
+                        console.print(f" [green]✓[/green] {linkedin_url}")
+                    else:
+                        console.print(" [dim]not found[/dim]")
+
+                    # Small delay to be nice to the API
+                    await asyncio.sleep(0.2)
+
+            session.commit()
+            console.print(f"\n[green]Done! Found LinkedIn for {found_count}/{len(companies)} companies.[/green]")
+
+    asyncio.run(run_linkedin_enrichment())
+
+
 if __name__ == "__main__":
     app()

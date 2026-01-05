@@ -37,5 +37,18 @@ module.exports = {
       autorestart: false,
       watch: false,
     },
+    {
+      name: 'food-finder-linkedin',
+      cwd: '/home/vincent/food-finder',
+      script: '/home/vincent/food-finder/venv/bin/python',
+      args: 'main.py enrich-linkedin --limit 100',
+      env: {
+        PYTHONPATH: '/home/vincent/food-finder',
+        PYTHONUNBUFFERED: '1',
+      },
+      cron_restart: '0 6 * * *',  // Run daily at 6 AM
+      autorestart: false,
+      watch: false,
+    },
   ],
 };

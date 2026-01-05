@@ -18,7 +18,7 @@ class CompanyType(str, Enum):
     """Types of companies we can classify."""
     RESEARCH_INSTITUTION = "research_institution"  # Universities, labs, research orgs
     GOVERNMENT = "government"  # Government agencies
-    LARGE_COMPANY = "large_company"  # Enterprise, major brands
+    COMPANY = "company"  # Enterprise, major brands, established businesses
     ESTABLISHED_BUSINESS = "established_business"  # Mid-sized with LinkedIn, professional presence
     FARM = "farm"  # Agricultural producers - farms, ranches, orchards
     ARTISAN_SHOP = "artisan_shop"  # Small local shops - bakeries, cafes, roasters
@@ -171,13 +171,13 @@ class CompanyClassifier:
             if keyword in name_lower:
                 enterprise_score += 10
                 signals.append(f"Enterprise keyword: '{keyword}'")
-        scores[CompanyType.LARGE_COMPANY] += enterprise_score
+        scores[CompanyType.COMPANY] += enterprise_score
         scores[CompanyType.ESTABLISHED_BUSINESS] += enterprise_score * 0.5
 
         # LinkedIn presence indicates established business
         if has_linkedin:
             scores[CompanyType.ESTABLISHED_BUSINESS] += 25
-            scores[CompanyType.LARGE_COMPANY] += 15
+            scores[CompanyType.COMPANY] += 15
             signals.append("Has LinkedIn company page")
         else:
             scores[CompanyType.ARTISAN_SHOP] += 10
@@ -186,7 +186,7 @@ class CompanyClassifier:
 
         # CRM indicates larger/sophisticated operation
         if has_crm:
-            scores[CompanyType.LARGE_COMPANY] += 30
+            scores[CompanyType.COMPANY] += 30
             signals.append("Has CRM system")
 
         # Tech stack complexity
@@ -194,7 +194,7 @@ class CompanyClassifier:
             tech_lower = tech_stack.lower()
             if "spa:" in tech_lower:
                 scores[CompanyType.ESTABLISHED_BUSINESS] += 10
-                scores[CompanyType.LARGE_COMPANY] += 10
+                scores[CompanyType.COMPANY] += 10
                 signals.append("Modern web framework (SPA)")
             if "analytics" in tech_lower:
                 scores[CompanyType.ESTABLISHED_BUSINESS] += 5
@@ -211,7 +211,7 @@ class CompanyClassifier:
                 scores[CompanyType.FARM] += 10  # Farms can be mid-sized too
                 signals.append(f"Mid-sized team ({employee_count} employees)")
             else:
-                scores[CompanyType.LARGE_COMPANY] += 30
+                scores[CompanyType.COMPANY] += 30
                 signals.append(f"Large team ({employee_count} employees)")
 
         # Default: if no strong signals, lean toward established business
