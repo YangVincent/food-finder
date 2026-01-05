@@ -91,8 +91,10 @@ class TechDetector:
         self.client: httpx.AsyncClient | None = None
 
     async def __aenter__(self):
+        # Use short timeouts to skip unresponsive/SSL-broken sites quickly
+        # connect=5.0 catches SSL handshake issues, total timeout=10s
         self.client = httpx.AsyncClient(
-            timeout=15.0,
+            timeout=httpx.Timeout(10.0, connect=5.0),
             follow_redirects=True,
             headers={"User-Agent": get_random_user_agent()},
         )

@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "preview": "npm run build && next start -p 3001",
+    "preview": "npm run build && next start -p 3003",
     "lint": "eslint"
   },
   "dependencies": {

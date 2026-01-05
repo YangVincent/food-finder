@@ -110,13 +110,13 @@ export default function LeadDetailPage() {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-start gap-4">
             {/* Draft Email Button */}
             <button
               onClick={() => setIsEmailModalOpen(true)}
               disabled={!lead.website}
               className={cn(
-                'flex items-center gap-2 px-4 py-2 font-mono text-sm transition-colors',
+                'flex items-center justify-center gap-2 h-8 px-4 font-mono text-sm transition-colors',
                 lead.website
                   ? 'bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary)]/90'
                   : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] cursor-not-allowed'
@@ -127,10 +127,10 @@ export default function LeadDetailPage() {
               Draft Email
             </button>
             {/* Score Badge */}
-            <div className="text-right">
+            <div className="flex flex-col items-center">
               <span
                 className={cn(
-                  'inline-flex items-center px-3 py-1.5 font-mono text-lg font-bold',
+                  'inline-flex items-center justify-center h-8 px-3 font-mono text-lg font-bold',
                   getScoreClass(lead.score)
                 )}
               >
@@ -142,11 +142,13 @@ export default function LeadDetailPage() {
             </div>
             {/* Qualified Status */}
             <div className="flex flex-col items-center">
-              {lead.is_qualified ? (
-                <CheckCircle2 className="h-8 w-8 text-[var(--success)]" />
-              ) : (
-                <XCircle className="h-8 w-8 text-[var(--danger)]" />
-              )}
+              <div className="flex items-center justify-center h-8">
+                {lead.is_qualified ? (
+                  <CheckCircle2 className="h-6 w-6 text-[var(--success)]" />
+                ) : (
+                  <XCircle className="h-6 w-6 text-[var(--danger)]" />
+                )}
+              </div>
               <p className="mt-1 font-mono text-xs text-[var(--text-muted)]">
                 {lead.is_qualified ? 'Qualified' : 'Disqualified'}
               </p>

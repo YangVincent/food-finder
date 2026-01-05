@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'food-finder-api',
       cwd: '/home/vincent/food-finder',
-      script: '/usr/bin/python3',
+      script: '/home/vincent/food-finder/venv/bin/python',
       args: '-m uvicorn ui.api.main:app --host 0.0.0.0 --port 8000',
       env: {
         PYTHONPATH: '/home/vincent/food-finder',
@@ -19,11 +19,23 @@ module.exports = {
       args: 'run preview',
       env: {
         NODE_ENV: 'production',
-        PORT: '3001',
+        PORT: '3003',
       },
       autorestart: true,
       max_restarts: 10,
       restart_delay: 1000,
+    },
+    {
+      name: 'food-finder-enrich',
+      cwd: '/home/vincent/food-finder',
+      script: '/home/vincent/food-finder/venv/bin/python',
+      args: 'main.py enrich --batch 50',
+      env: {
+        PYTHONPATH: '/home/vincent/food-finder',
+        PYTHONUNBUFFERED: '1',
+      },
+      autorestart: false,
+      watch: false,
     },
   ],
 };

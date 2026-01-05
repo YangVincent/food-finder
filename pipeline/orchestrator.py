@@ -229,6 +229,25 @@ async def run_enrichment_pipeline(
                 try:
                     print(f"  Enriching: {company['name'][:50]}...")
 
+                    # Quick classification: if "farm" in name, skip expensive searches
+                    name_lower = company["name"].lower()
+                    if "farm" in name_lower or "ranch" in name_lower:
+                        company["company_type"] = "farm"
+                        company["has_linkedin"] = False
+                        print(f"    Type: farm (name match - skipped enrichment)")
+
+                        # Score the lead
+                        score_company_dict(company)
+                        print(f"    Score: {company['score']}")
+
+                        # Mark as enriched and continue to next
+                        enriched_ids.add(company["id"])
+                        enriched_count += 1
+
+                        if max_leads and enriched_count >= max_leads:
+                            break
+                        continue
+
                     # Find website if missing
                     if not company["website"]:
                         website = await website_finder.find_website(
